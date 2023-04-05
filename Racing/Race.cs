@@ -5,45 +5,35 @@ namespace Racing
     public class Race
     {
         static List<Car> cars = new List<Car>();
-        static List<Thread> threads = new List<Thread>();
-        static int count = 0;
-        public async void Start()
+        public async Task Start()
         {
-            Console.WriteLine("Hur många bilar ska tävla?");
-            int numOfThreads = int.Parse(Console.ReadLine());
-            FillList(numOfThreads);
-            foreach (Car car in cars)
+            List<Task> tasks = new List<Task>();
+            PopulateCarList(2);
+            Console.WriteLine("Task started");
+            cars.ForEach(async car =>
             {
-                Console.WriteLine(car.Name);
-                var thread = new Thread(() =>
-                {
-                    Thread.CurrentThread.IsBackground = true;
-                    RaceTest();
-                });
-                threads.Add(thread);
-            }
-            while (count < numOfThreads)
-            {
-                for (int i = 0; i < threads.Count; i++)
-                {
-                    threads[i].Start();
-                }
-            };
+                var LastTask = RaceLogic(car);
+                tasks.Add(LastTask);
+            });
 
+            Task.WaitAll(tasks.ToArray());
+            Console.WriteLine("Task ended");
+            Console.ReadKey();
         }
 
-        private void FillList(int amountOfCars)
+        private void PopulateCarList(int amountOfCars)
         {
             for (int i = 0; i < amountOfCars; i++)
             {
                 Car car = new Car();
-                car.Id = i;
+                car.Id = i + 1;
                 car.Name = "Car " + (i + 1);
                 cars.Add(car);
             }
         }
-        private async Task RaceTest()
+        private async Task ShowRaceProgress(Car car)
         {
+            List<ProgressTask> tasks = new List<ProgressTask>();
             await AnsiConsole.Progress()
                     .AutoRefresh(true)
                     .AutoClear(false)
@@ -58,77 +48,111 @@ namespace Racing
                     })
                     .StartAsync(async ctx =>
                     {
-                        string test = RandomColor();
-                        var task = ctx.AddTask($"[{test}]Car[/]");
+                        var task = ctx.AddTask($"[{RandomColor()}]Car{car.Id}[/]");
                         while (!ctx.IsFinished)
                         {
-                            await Task.Delay(150);
-                            task.Increment(3);
+                            await Task.Delay(100);
+                            task.Increment(10);
                         }
-                        count++;
-
                     });
+        }
+
+        private async Task RaceLogic(Car car)
+        {
+            double tempDist = 0;
+            while (car.Distance <= car.DistanceToDrive)
+            {
+                car.Current_Speed = car.Max_Speed;
+                //await DriveCar(car);
+                car.CalculateDistance(6);
+                if (tempDist + 0.99 <= car.Distance)
+                {
+                    await Task.Delay(1000);
+                    tempDist = car.Distance;
+                    Console.WriteLine($"{car.Name} - Distance driven: {car.Distance:N1}km");
+                    await Problems(car);
+                }
+            }
+            Console.WriteLine($"{car.Name} drove past the finish line! - Current top speed is: {car.Current_Speed}");
         }
 
         private string RandomColor()
         {
             Random random = new Random();
-            string test;
+            string color;
             switch (random.Next(5))
             {
                 case 0:
-                    test = "red";
+                    color = "red";
                     break;
                 case 1:
-                    test = "green";
+                    color = "green";
                     break;
                 case 2:
-                    test = "blue";
+                    color = "blue";
                     break;
                 case 3:
-                    test = "yellow";
+                    color = "yellow";
                     break;
                 default:
-                    test = "purple";
+                    color = "purple";
                     break;
             }
-            return test;
+            return color;
         }
 
-        private void Problems(int num)
+        private async Task Problems(Car car)
         {
-            switch (num)
+            Random random = new Random();
+            switch (random.Next(50))
             {
                 case 0:
                     // Refuel - Wait 30 sec
+                    await Wait(30);
+                    Console.WriteLine($"{car.Name} is refuelling");
                     break;
-                case 1:
+                case int n when (n > 0 && n <= 2):
                     // Tire change - Wait 20 sec
+                    await Wait(20);
+                    Console.WriteLine($"{car.Name} are changing their wheels");
                     break;
-                case 2 - 5:
+                case int n when (n >= 3 && n <= 7):
                     // Wash windscreen - Wait 10 sec
+                    await Wait(10);
+                    Console.WriteLine($"{car.Name} is washing their windscreen squeaky clean");
                     break;
-                case 6 - 16:
+                case int n when (n >= 8 && n <= 19):
                     // Lower max speed by 1km/h
+                    Console.WriteLine($"{car.Name} had a minor engine failure. Speed is now decreased by 1km/h");
+                    car.Max_Speed -= 1;
                     break;
                 default:
                     // No fault - Carry on
                     break;
             }
         }
+
+        public async Task<Car> DriveCar(Car car)
+        {
+            int racingTime = 10;
+            while (true)
+            {
+                await Wait(racingTime);
+                car.CalculateDistance(1);
+
+                if (car.Distance >= car.DistanceToDrive)
+                {
+                    return car;
+                }
+            }
+        }
+
+        private async Task Wait(int delay = 1)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(delay / 10));
+        }
     }
 }
-
-//WaitHandle[] waitHandles = new WaitHandle[numOfThreads];
-//FillList(numOfThreads);
-//RaceTest(numOfThreads);
-//foreach (Car car in cars)
-//{
-//    Console.WriteLine(car.Name);
-//    var test = new Thread(Worker);
-//    test.Start();
-//    threads.Add(test);
-//}
 
 /* RACE
  * Switch case for errors?
