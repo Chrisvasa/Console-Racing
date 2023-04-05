@@ -8,11 +8,12 @@
         public int Max_Speed { get; set; } = 120;
         public double Distance { get; set; } = 0;
         public double DistanceToDrive { get; set; } = 10;
-
+        public int TimeDriven { get; set; } = 0;
         public void CalculateDistance(int timeInSeconds)
         {
             double tempDistance = (Current_Speed / 3.6) * timeInSeconds;
             Distance += tempDistance / 1000;
+            TimeDriven += timeInSeconds;
         }
     }
 }

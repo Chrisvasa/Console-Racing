@@ -12,7 +12,8 @@ namespace Racing
             Console.WriteLine("Task started");
             cars.ForEach(async car =>
             {
-                var LastTask = RaceLogic(car);
+                Task LastTask = RaceLogic(car);
+                await Task.Run(() => { LastTask.Wait(); });
                 tasks.Add(LastTask);
             });
 
@@ -63,17 +64,18 @@ namespace Racing
             while (car.Distance <= car.DistanceToDrive)
             {
                 car.Current_Speed = car.Max_Speed;
-                //await DriveCar(car);
-                car.CalculateDistance(6);
+                await Task.Delay(1000);
                 if (tempDist + 0.99 <= car.Distance)
                 {
                     await Task.Delay(1000);
                     tempDist = car.Distance;
+                    car.TimeDriven += 6;
                     Console.WriteLine($"{car.Name} - Distance driven: {car.Distance:N1}km");
                     await Problems(car);
                 }
+                car.CalculateDistance(30);
             }
-            Console.WriteLine($"{car.Name} drove past the finish line! - Current top speed is: {car.Current_Speed}");
+            Console.WriteLine($"{car.Name} drove past the finish line! - They drove {car.Distance:N2}km \nCurrent top speed is: {car.Current_Speed} and it took them: {car.TimeDriven} seconds");
         }
 
         private string RandomColor()
@@ -109,16 +111,19 @@ namespace Racing
                 case 0:
                     // Refuel - Wait 30 sec
                     await Wait(30);
+                    car.TimeDriven += 30;
                     Console.WriteLine($"{car.Name} is refuelling");
                     break;
                 case int n when (n > 0 && n <= 2):
                     // Tire change - Wait 20 sec
                     await Wait(20);
+                    car.TimeDriven += 20;
                     Console.WriteLine($"{car.Name} are changing their wheels");
                     break;
                 case int n when (n >= 3 && n <= 7):
                     // Wash windscreen - Wait 10 sec
                     await Wait(10);
+                    car.TimeDriven += 10;
                     Console.WriteLine($"{car.Name} is washing their windscreen squeaky clean");
                     break;
                 case int n when (n >= 8 && n <= 19):
