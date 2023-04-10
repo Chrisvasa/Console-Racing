@@ -7,9 +7,10 @@ namespace Racing
         static List<Car> cars = new List<Car>();
         public async Task Start()
         {
-            List<Task> tasks = new List<Task>();
             PopulateCarList(2);
             Console.WriteLine("Task started");
+
+            List<Task> tasks = new List<Task>();
             cars.ForEach(async car =>
             {
                 Task LastTask = RaceLogic(car);
@@ -60,22 +61,18 @@ namespace Racing
 
         private async Task RaceLogic(Car car)
         {
-            double tempDist = 0;
-            while (car.Distance <= car.DistanceToDrive)
+            while (car.Distance < car.DistanceToDrive)
             {
                 car.Current_Speed = car.Max_Speed;
-                await Task.Delay(1000);
-                if (tempDist + 0.99 <= car.Distance)
+                if (car.Distance <= car.DistanceToDrive)
                 {
+                    await car.CalculateDistance();
                     await Task.Delay(1000);
-                    tempDist = car.Distance;
-                    car.TimeDriven += 6;
-                    Console.WriteLine($"{car.Name} - Distance driven: {car.Distance:N1}km");
+                    Console.WriteLine($"{car.Name} - Distance driven: {car.Distance} km");
                     await Problems(car);
                 }
-                car.CalculateDistance(30);
             }
-            Console.WriteLine($"{car.Name} drove past the finish line! - They drove {car.Distance:N2}km \nCurrent top speed is: {car.Current_Speed} and it took them: {car.TimeDriven} seconds");
+            Console.WriteLine($"{car.Name} drove past the finish line! - They drove {car.Distance} km \nCurrent top speed is: {car.Current_Speed} and it took them: {car.TimeDriven:N1} seconds");
         }
 
         private string RandomColor()
@@ -143,7 +140,7 @@ namespace Racing
             while (true)
             {
                 await Wait(racingTime);
-                car.CalculateDistance(1);
+                car.CalculateDistance();
 
                 if (car.Distance >= car.DistanceToDrive)
                 {

@@ -8,12 +8,20 @@
         public int Max_Speed { get; set; } = 120;
         public double Distance { get; set; } = 0;
         public double DistanceToDrive { get; set; } = 10;
-        public int TimeDriven { get; set; } = 0;
-        public void CalculateDistance(int timeInSeconds)
+        public double TimeDriven { get; set; } = 0;
+        public async Task CalculateDistance()
         {
-            double tempDistance = (Current_Speed / 3.6) * timeInSeconds;
-            Distance += tempDistance / 1000;
-            TimeDriven += timeInSeconds;
+            //if(Distance > 9)
+            //{
+            //    double temp = 10 - Distance;
+            //    TimeDriven += (temp * 1000) / (Current_Speed / 3.6);
+            //    Distance = 10;
+            //}
+            //else
+            //{
+                TimeDriven += 1000 / (Current_Speed / 3.6);
+                Distance += 1;
+            //}
         }
     }
 }
