@@ -7,24 +7,25 @@ namespace Racing
         static List<Car> cars = new List<Car>();
         public async Task Start()
         {
-            PopulateCarList(2);
             Console.WriteLine("Task started");
+            PopulateCarList();
 
             List<Task> tasks = new List<Task>();
-            cars.ForEach(async car =>
+            cars.ForEach(car =>
             {
-                Task LastTask = RaceLogic(car);
-                await Task.Run(() => { LastTask.Wait(); });
-                tasks.Add(LastTask);
+                Task currentTask = RaceLogic(car);
+                tasks.Add(currentTask);
             });
 
-            Task.WaitAll(tasks.ToArray());
+            //await Task.WhenAll(tasks);
+            await ShowRaceProgress(tasks);
             Console.WriteLine("Task ended");
-            Console.ReadKey();
         }
 
-        private void PopulateCarList(int amountOfCars)
+        private void PopulateCarList()
         {
+            Console.WriteLine("How many cars do you want in this race?");
+            int.TryParse(Console.ReadLine(), out int amountOfCars);
             for (int i = 0; i < amountOfCars; i++)
             {
                 Car car = new Car();
@@ -33,7 +34,7 @@ namespace Racing
                 cars.Add(car);
             }
         }
-        private async Task ShowRaceProgress(Car car)
+        private async Task ShowRaceProgress(List<Task> taskList)
         {
             List<ProgressTask> tasks = new List<ProgressTask>();
             await AnsiConsole.Progress()
@@ -50,11 +51,19 @@ namespace Racing
                     })
                     .StartAsync(async ctx =>
                     {
-                        var task = ctx.AddTask($"[{RandomColor()}]Car{car.Id}[/]");
+                        taskList.ForEach(taskL =>
+                        {
+                            var task = ctx.AddTask($"[{RandomColor()}]Car[/]");
+                            tasks.Add(task);
+                        });
                         while (!ctx.IsFinished)
                         {
                             await Task.Delay(100);
-                            task.Increment(10);
+                            int count = 0;
+                            tasks.ForEach(task =>
+                            {
+                                task.Value = cars[count++].Distance * 10;
+                            });
                         }
                     });
         }
@@ -63,16 +72,19 @@ namespace Racing
         {
             while (car.Distance < car.DistanceToDrive)
             {
-                car.Current_Speed = car.Max_Speed;
-                if (car.Distance <= car.DistanceToDrive)
+                if(car.Distance != car.DistanceToDrive)
                 {
-                    await car.CalculateDistance();
-                    await Task.Delay(1000);
-                    Console.WriteLine($"{car.Name} - Distance driven: {car.Distance} km");
-                    await Problems(car);
+                    car.Current_Speed = car.Max_Speed;
+                    if (car.Distance <= car.DistanceToDrive)
+                    {
+                        await car.CalculateDistance();
+                        await Task.Delay(1000);
+                        //Console.WriteLine($"{car.Name} - Distance driven: {car.Distance} km");
+                        await Problems(car);
+                    }
                 }
             }
-            Console.WriteLine($"{car.Name} drove past the finish line! - They drove {car.Distance} km \nCurrent top speed is: {car.Current_Speed} and it took them: {car.TimeDriven:N1} seconds");
+            //Console.WriteLine($"{car.Name} drove past the finish line! - They drove {car.Distance} km \nCurrent top speed is: {car.Current_Speed} and it took them: {car.TimeDriven:N1} seconds");
         }
 
         private string RandomColor()
@@ -107,25 +119,22 @@ namespace Racing
             {
                 case 0:
                     // Refuel - Wait 30 sec
-                    await Wait(30);
-                    car.TimeDriven += 30;
-                    Console.WriteLine($"{car.Name} is refuelling");
+                    await Wait(car, 30);
+                    //Console.WriteLine($"{car.Name} is refuelling");
                     break;
                 case int n when (n > 0 && n <= 2):
                     // Tire change - Wait 20 sec
-                    await Wait(20);
-                    car.TimeDriven += 20;
-                    Console.WriteLine($"{car.Name} are changing their wheels");
+                    await Wait(car, 20);
+                    //Console.WriteLine($"{car.Name} are changing their wheels");
                     break;
                 case int n when (n >= 3 && n <= 7):
                     // Wash windscreen - Wait 10 sec
-                    await Wait(10);
-                    car.TimeDriven += 10;
-                    Console.WriteLine($"{car.Name} is washing their windscreen squeaky clean");
+                    await Wait(car, 10);
+                    //Console.WriteLine($"{car.Name} is washing their windscreen squeaky clean");
                     break;
                 case int n when (n >= 8 && n <= 19):
                     // Lower max speed by 1km/h
-                    Console.WriteLine($"{car.Name} had a minor engine failure. Speed is now decreased by 1km/h");
+                    //Console.WriteLine($"{car.Name} had a minor engine failure. Speed is now decreased by 1km/h");
                     car.Max_Speed -= 1;
                     break;
                 default:
@@ -134,23 +143,9 @@ namespace Racing
             }
         }
 
-        public async Task<Car> DriveCar(Car car)
+        private async Task Wait(Car car, int delay = 1)
         {
-            int racingTime = 10;
-            while (true)
-            {
-                await Wait(racingTime);
-                car.CalculateDistance();
-
-                if (car.Distance >= car.DistanceToDrive)
-                {
-                    return car;
-                }
-            }
-        }
-
-        private async Task Wait(int delay = 1)
-        {
+            car.TimeDriven += delay;
             await Task.Delay(TimeSpan.FromSeconds(delay / 10));
         }
     }
