@@ -78,10 +78,12 @@ namespace Racing
             if(count == 0)
             {
                 Console.WriteLine($"{car.Name} has Won the race! - They drove {car.Distance:N1} km \nCurrent top speed is: {car.Current_Speed} and it took them: {car.TimeDriven:N3} seconds");
+                Console.WriteLine();
             }
             else
             {
                 Console.WriteLine($"{car.Name} drove past the finish line! - They drove {car.Distance:N1} km \nCurrent top speed is: {car.Current_Speed} and it took them: {car.TimeDriven:N3} seconds");
+                Console.WriteLine();
             }
             count++;
             // Since the race is over, this will disable the possibility for the user to print stats
