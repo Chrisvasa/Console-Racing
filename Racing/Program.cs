@@ -4,8 +4,7 @@
     {
         static async Task Main(string[] args)
         {
-            Race racing = new();
-            await racing.Start();
+            await Race.Start();
         }
     }
 }

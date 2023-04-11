@@ -11,17 +11,9 @@
         public double TimeDriven { get; set; } = 0;
         public async Task CalculateDistance()
         {
-            //if(Distance > 9)
-            //{
-            //    double temp = 10 - Distance;
-            //    TimeDriven += (temp * 1000) / (Current_Speed / 3.6);
-            //    Distance = 10;
-            //}
-            //else
-            //{
-                TimeDriven += 1000 / (Current_Speed / 3.6);
-                Distance += 1;
-            //}
+            TimeDriven += 100 / (Current_Speed / 3.6);
+            Distance += 0.1;
+            await Task.Delay(300);
         }
     }
 }
