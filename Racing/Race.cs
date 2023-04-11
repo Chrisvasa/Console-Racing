@@ -5,6 +5,7 @@ namespace Racing
     public class Race
     {
         private static bool isRacing = true;
+        private static int count = 0;
         //When called starts a race
         public static async Task Start()
         {
@@ -74,7 +75,15 @@ namespace Racing
                     //Console.WriteLine($"{car.Name} - Distance driven: {car.Distance} km");
                 }
             }
-            Console.WriteLine($"{car.Name} drove past the finish line! - They drove {car.Distance:N1} km \nCurrent top speed is: {car.Current_Speed} and it took them: {car.TimeDriven:N3} seconds");
+            if(count == 0)
+            {
+                Console.WriteLine($"{car.Name} has Won the race! - They drove {car.Distance:N1} km \nCurrent top speed is: {car.Current_Speed} and it took them: {car.TimeDriven:N3} seconds");
+            }
+            else
+            {
+                Console.WriteLine($"{car.Name} drove past the finish line! - They drove {car.Distance:N1} km \nCurrent top speed is: {car.Current_Speed} and it took them: {car.TimeDriven:N3} seconds");
+            }
+            count++;
             // Since the race is over, this will disable the possibility for the user to print stats
             isRacing = false;
         }
@@ -102,6 +111,7 @@ namespace Racing
                 Console.WriteLine();
             }
         }
+
         // This method contains different problems that can occur to each car when called
         // Will get a new random number every time its called
         private static async Task Problems(Car car)
