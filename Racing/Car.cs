@@ -4,6 +4,7 @@
     {
         public int Id { get; set; }
         public string? Name { get; set; }
+        public string? Description { get; set; }
         public int Current_Speed { get; set; } = 0;
         public int Max_Speed { get; set; } = 120;
         public double Distance { get; set; } = 0;
@@ -19,8 +20,10 @@
             //}
             //else
             //{
-                TimeDriven += 1000 / (Current_Speed / 3.6);
-                Distance += 1;
+            TimeDriven += 100 / (Current_Speed / 3.6);
+            Distance += 0.1;
+            await Task.Delay(100);
+
             //}
         }
     }
